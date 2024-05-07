@@ -13,10 +13,13 @@ def getRenderLag(lines):
     val = 0
     severity = 9000
     for drop in drops:
-        v = float(drop[drop.find("(") + 1: drop.find(")")
+        try:
+            v = float(drop[drop.find("(") + 1: drop.find(")")
                        ].strip('%').replace(",", "."))
-        if (v > val):
-            val = v
+            if (v > val):
+                val = v
+        except ValueError:
+            continue
 
     return val
 
