@@ -295,17 +295,17 @@ def checkWindowsVer(lines):
         if verinfo["build"] > 22000:
             msg = "You are running Windows 11 Insider build %d. Some checks that are applicable only to specific Windows versions will not be performed. Also, because Insider builds are test versions, you may have problems that would not happen with release versions of Windows 11." % (
                 verinfo["build"])
-            return [LEVEL_WARNING, "Windows 11 Insider Build", msg]
+            return [LEVEL_SYSTEM, "Warning: Windows 11 Insider Build", msg]
         else:
             msg = "You are running an unknown Windows 10 release (build %d), which means you are probably using an Insider build. Some checks that are applicable only to specific Windows versions will not be performed. Also, because Insider builds are test versions, you may have problems that would not happen with release versions of Windows." % (
                 verinfo["build"])
-            return [LEVEL_WARNING, "Windows 10 Version Unknown", msg]
+            return [LEVEL_SYSTEM, "Warning: Windows 10 Version Unknown", msg]
 
     if "EoS" in verinfo and datetime.date.today() > verinfo["EoS"]:
         wv = "%s (EOL)" % (html.escape(verinfo["name"]))
         msg = "You are running %s, which has not been supported by Microsoft since <strong>%s</strong>. We recommend updating to the latest Windows release to ensure continued security, functionality, and compatibility." % (
             html.escape(verinfo["name"]), verinfo["EoS"].strftime("%B %Y"))
-        return [LEVEL_WARNING, wv, msg]
+        return [LEVEL_SYSTEM, "Warning: " + wv, msg]
 
     # our windows version isn't out of support, so just say what version the user has and when
     # it actually does go out of support
@@ -318,7 +318,7 @@ def checkWindowsVer(lines):
         msg = "You are running %s, for which Microsoft has not yet announced an end of life date." % (
             html.escape(verinfo["name"]))
 
-    return [LEVEL_INFO, wv, msg]
+    return [LEVEL_SYSTEM, wv, msg]
 
 
 def checkWindowsARM64(lines):

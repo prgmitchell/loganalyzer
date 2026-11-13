@@ -222,4 +222,6 @@ def checkLinuxSystemInfo(lines):
         desktopEnvironment = 'None'
         linuxSystemInfoHelp += '<br>No Desktop Environment detected. This can lead to undefined behavior. Please consult your Desktop Environment\'s or Window Manager\'s support channels on how to fix this.'
 
-    return [logLevel, linuxDistroOrFlatpak + ' | ' + displayServer + ' | ' + desktopEnvironment, linuxSystemInfoHelp]
+    if logLevel == LEVEL_WARNING:
+        linuxDistroOrFlatpak = 'Warning: ' + linuxDistroOrFlatpak
+    return [LEVEL_SYSTEM, linuxDistroOrFlatpak + ' | ' + displayServer + ' | ' + desktopEnvironment, linuxSystemInfoHelp]

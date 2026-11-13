@@ -13,6 +13,9 @@ with open("templates/index.html", "r") as f:  # Grab main HTML page
 with open("templates/detail.html", "r") as f:  # Grab details page
     htmlDetail = f.read()
 
+with open("templates/system-item.html", "r") as f:
+    htmlSystemItem = f.read()
+
 
 def checkUrl(url):
     """Check if the incoming URL can be analyzed"""
@@ -24,6 +27,7 @@ def getSummaryHTML(messages):
     critical = ""
     warning = ""
     info = ""
+    system = ""
     for i in messages:
         if (i[0] == 3):
             critical = critical + """<p><a href="#""" + \
@@ -37,13 +41,26 @@ def getSummaryHTML(messages):
             info = info + """<p><a href="#""" + \
                 i[1] + """"><button type="button" class="btn btn-info">""" + \
                 i[1] + "</button></a></p>\n"
+        elif (i[0] == 5):
+            label, value = "OS", i[1]
+            if value.startswith(("CPU: ", "GPU: ", "RAM: ")):
+                label, value = value.split(": ", 1)
+            elif i[2]:
+                if value.startswith("Warning: "):
+                    label += ' <span class="text-warning" role="img" aria-label="Warning" title="Warning">&#9888;</span>'
+                    value = value.removeprefix("Warning: ")
+                value = f'<details><summary>{value}</summary>{i[2]}</details>'
+            system += htmlSystemItem.format(label=label, value=value)
     if (len(critical) == 0):
         critical = "No critical issues."
     if (len(warning) == 0):
         warning = "No warnings."
     if (len(info) == 0):
         info = "-"
-    return critical, warning, info
+    if system:
+        system = ('<section class="my-3" aria-labelledby="system-heading"><h2 id="system-heading" class="h5 mb-2">System</h2>'
+                  '<div class="row mx-n1">' + system + '</div></section>')
+    return critical, warning, info, system
 
 
 def getDetailsHTML(messages):
@@ -85,7 +102,7 @@ def getDescr(messages):
 def genFullHtmlResponse(url):
     """Runs an analysis and returns a full HTML page with the response."""
     msgs = analyze.doAnalysis(url=url)
-    crit, warn, info = getSummaryHTML(msgs)
+    crit, warn, info, system = getSummaryHTML(msgs)
     details = getDetailsHTML(msgs)
     response = htmlTemplate.format(ph=url,
                                    description="""<a href="{}">{}</a>""".format(
@@ -93,6 +110,7 @@ def genFullHtmlResponse(url):
                                    summary_critical=crit,
                                    summary_warning=warn,
                                    summary_info=info,
+                                   summary_system=system,
                                    details=details)
     return response
 
@@ -105,6 +123,7 @@ def genEmptyHtmlResponse():
                                         summary_critical=no_log,
                                         summary_warning=no_log,
                                         summary_info=no_log,
+                                        summary_system="",
                                         details="""<p class="text-warning">""" + no_log + """</p>""")
     return response_body
 
@@ -116,6 +135,7 @@ def genJsonResponse(url, detailed):
     critical = []
     warning = []
     info = []
+    system = []
     for i in msgs:
         entry = i[1]
         if detailed:
@@ -126,7 +146,9 @@ def genJsonResponse(url, detailed):
             warning.append(entry)
         elif (i[0] == 1):
             info.append(entry)
-    return {"critical": critical, "warning": warning, "info": info}
+        elif (i[0] == 5):
+            system.append(entry)
+    return {"critical": critical, "warning": warning, "info": info, "system": system}
 
 
 def sync_request_handler(request):
